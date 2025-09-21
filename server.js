@@ -8,8 +8,6 @@ const app = express();
 const port = 3001;
 const dotenv = require('dotenv');
 const { authenticateUser } = require('./controllers/authController');
-const jwt = require('jsonwebtoken');
-const OpenAI = require("openai");
 dotenv.config();
 
 app.use(cors());
@@ -21,7 +19,6 @@ const io = new Server(server, {
     methods: ['GET', 'POST']
   }
 });
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 io.on("connection", (socket) => {
   console.log("🔗 Client connected");
