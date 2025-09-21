@@ -8,6 +8,8 @@ const app = express();
 const port = 3001;
 const dotenv = require('dotenv');
 const { authenticateUser } = require('./controllers/authController');
+const jwt = require('jsonwebtoken');
+const OpenAI = require("openai");
 dotenv.config();
 
 app.use(cors());
@@ -15,21 +17,32 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:3001',
+    origin: 'http://localhost:3000',
     methods: ['GET', 'POST']
   }
 });
-let sockets = new Set();
-io.on('connection', (socket) => {
-  sockets.add(socket.id);
-  console.log('User connected:', socket.id);
-  socket.on('sendMessage', (message) => {
-    console.log('Message:', message);
-    io.emit('receiveMessage', {text: message.text, timestamp: new Date()});
-  })
-  socket.emit('welcome', `Welcome to the chat server!${socket.id}`);
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+io.on("connection", (socket) => {
+  console.log("🔗 Client connected");
+
+  const activityInterval = setInterval(() => {
+    const activities = [
+      "Superman",
+      "The Conjuring",
+      "The Bad Guys",
+      "K-POP Dreams",
+    ];
+    const randomMovie =
+      activities[Math.floor(Math.random() * activities.length)];
+    socket.emit("activity", {
+      message: `Someone started watching ${randomMovie}`,
+    });
+  }, 5000);
+
+  socket.on("disconnect", () => {
+    clearInterval(activityInterval);
+    console.log("❌ Client disconnected");
   });
 });
 
